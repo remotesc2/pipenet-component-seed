@@ -1,59 +1,23 @@
 # pipenet-component-seed
 
-基于 react 的地图组件
+一个功能（工具集、组件）开发脚手架
 
-## 安装
+## 拉取
 
 ```bash
-npm i pipenet-component-seed -D
+git clone git@github.com:remotesc2/pipenet-component-seed.git
 ```
 
-## 使用
+## 全局修改名称
 
-```jsx
-import { View, Map, Layer } from 'pipenet-component-seed';
+缺省项目名称为：pipenet-component-seed，可以通过全局搜索，替换为任意你想使用的名称
 
-const { MapView } = View;
-const { TileLayer } = Layer;
-
-const api = 'http://192.168.8.130:8085';
-
-class App extends React.Component {
-  render() {
-    return (
-      <div style={{ width: '100%', height: '400px' }}>
-        <MapView api={api}>
-          <Map>
-            <TileLayer url="https://services.arcgisonline.com/arcgis/rest/services/World_Terrain_Base/MapServer" />
-          </Map>
-        </MapView>
-      </div>
-    );
-  }
-}
-
-ReactDOM.render(<App />, document.getElementId('app'));
-```
+注意：这个名称一定是你的 npm 工程名称
 
 ## 模块划分说明
 
 ```bash
-├── Map
-├── Graphic
-├── Layer
-|  ├── TileLayer -- 瓦片图层
-|  ├── VectorLayer -- 矢量图层
-|  └── GraphicsLayer -- 图案图层
-├── Geometry
-|  ├── Point -- 点
-|  ├── Polyline -- 线
-|  ├── Polygon -- 面
-|  └── Text -- 文字
-├── MapSymbol
-|  ├── SimpleFillSymbol -- 填充样式
-|  ├── SimpleLineSymbol -- 线样式
-|  ├── SimpleMarkerSymbol -- 几何样式
-|  └── TextSymbol -- 文字样式
-├── Popup -- 弹框
-└── Sketch -- 绘制
+├── components -- 功能开发区域
+├── docs -- 描述信息
+└── site -- 网站样式
 ```
