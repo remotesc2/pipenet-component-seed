@@ -18,13 +18,13 @@ const COLOR_MAP = {
 };
 
 const reducePlugin = postcss.plugin('reducePlugin', () => {
-  const cleanRule = (rule) => {
+  const cleanRule = rule => {
     if (rule.selector.startsWith('.main-color .palatte-')) {
       rule.remove();
       return;
     }
     let removeRule = true;
-    rule.walkDecls((decl) => {
+    rule.walkDecls(decl => {
       if (
         !decl.prop.includes('color') &&
         !decl.prop.includes('background') &&
@@ -40,8 +40,8 @@ const reducePlugin = postcss.plugin('reducePlugin', () => {
       rule.remove();
     }
   };
-  return (css) => {
-    css.walkAtRules((atRule) => {
+  return css => {
+    css.walkAtRules(atRule => {
       atRule.remove();
     });
 
@@ -51,44 +51,50 @@ const reducePlugin = postcss.plugin('reducePlugin', () => {
   };
 });
 
-const rootPath = path.resolve(__dirname, '../../');
+const rootPath = path.resolve(__dirname, '../');
 const relativePath = path.resolve(__dirname, '../');
 
 const entry = path.join(rootPath, 'components/style/index.less');
 let content = fs.readFileSync(entry).toString();
 const styles = glob.sync(path.join(rootPath, 'components/*/style/index.less'));
 content += '\n';
-styles.forEach((style) => {
+styles.forEach(style => {
   content += `@import "${style}";\n`;
 });
 content += `@import "${path.join(relativePath, 'theme/static/index.less')}";\n`;
 
-less.render.call(less, content, {
-  paths: [path.join(rootPath, 'components/style')],
-}).then(({ css }) => {
-  return postcss([
-    reducePlugin,
-  ]).process(css, { parser: less.parser, from: entry });
-}).then(({ css }) => {
-  Object.keys(COLOR_MAP).forEach((key) => {
-    css = css.replace(new RegExp(key, 'g'), COLOR_MAP[key]);
+less.render
+  .call(less, content, {
+    paths: [path.join(rootPath, 'components/style')],
+  })
+  .then(({ css }) => {
+    return postcss([reducePlugin]).process(css, { parser: less.parser, from: entry });
+  })
+  .then(({ css }) => {
+    Object.keys(COLOR_MAP).forEach(key => {
+      css = css.replace(new RegExp(key, 'g'), COLOR_MAP[key]);
+    });
+
+    const bezierEasing = fs
+      .readFileSync(path.join(relativePath, 'theme/static/style/color/bezierEasing.less'))
+      .toString();
+    const tinyColor = fs
+      .readFileSync(path.join(relativePath, 'theme/static/style/color/tinyColor.less'))
+      .toString();
+    const colorPalette = fs
+      .readFileSync(path.join(relativePath, 'theme/static/style/color/colorPalette.less'))
+      .toString()
+      .replace('@import "bezierEasing";', '')
+      .replace('@import "tinyColor";', '');
+
+    css = `${colorPalette}\n${css}`;
+    css = `${tinyColor}\n${css}`;
+    css = `${bezierEasing}\n${css}`;
+    css = `@primary-color: #1890ff;\n${css}`;
+
+    const siteDir = path.resolve(rootPath, '_site');
+    if (!fs.existsSync(siteDir)) {
+      fs.mkdirSync(siteDir);
+    }
+    fs.writeFileSync(path.resolve(rootPath, '_site/color.less'), css);
   });
-
-  const bezierEasing = fs.readFileSync(path.join(relativePath, 'theme/static/style/color/bezierEasing.less')).toString();
-  const tinyColor = fs.readFileSync(path.join(relativePath, 'theme/static/style/color/tinyColor.less')).toString();
-  const colorPalette = fs.readFileSync(path.join(relativePath, 'theme/static/style/color/colorPalette.less'))
-    .toString()
-    .replace('@import "bezierEasing";', '')
-    .replace('@import "tinyColor";', '');
-
-  css = `${colorPalette}\n${css}`;
-  css = `${tinyColor}\n${css}`;
-  css = `${bezierEasing}\n${css}`;
-  css = `@primary-color: #1890ff;\n${css}`;
-
-  const siteDir = path.resolve(rootPath, '_site');
-  if (!fs.existsSync(siteDir)) {
-    fs.mkdirSync(siteDir);
-  }
-  fs.writeFileSync(path.resolve(rootPath, '_site/color.less'), css);
-});
